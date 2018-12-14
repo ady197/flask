@@ -1,8 +1,10 @@
 from flask import Flask
+from flask_script import Manager
 from app_flasky.config import configuration
 
 app = Flask(__name__)
 app.config.from_object(configuration)
+manager = Manager(app)
 
 @app.route('/')
 def index():
@@ -14,9 +16,8 @@ def hello(name):
 
 
 if __name__ == '__main__':
-    import sys
-    print(sys.path)
-    app.run(host=app.config.get("HOST"),
-            port=app.config.get("PORT"),
-            threaded=True
-    )
+    manager.run()
+    # app.run(host=app.config.get("HOST"),
+    #         port=app.config.get("PORT"),
+    #         threaded=True
+    # )
