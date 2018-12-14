@@ -1,0 +1,54 @@
+version: "3.4"
+
+services:
+  # The following services allow to run a shell with the environment of the apps
+
+  pg-admin:
+    image: dpage/pgadmin4
+    volumes:
+      - pg-admin:/var/lib/pgadmin
+    networks:
+      ? flasky
+      ? default
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@flasky.com"
+      PGADMIN_DEFAULT_PASSWORD: "flasky"
+      VIRTUAL_HOST: "pg-admin.sortlist.local"
+      VIRTUAL_PORT: "80"
+
+  flasky-db:
+    image: mdillon/postgis:10-alpine
+    networks:
+      ? flasky
+    ports:
+      - 5432:5432 # Allows using postgres-client from host
+    environment:
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_USER: "postgres"
+      POSTGRES_DB: "flasky"
+
+  flasky-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.flasky
+      target: dev
+    volumes:
+      - ./src:/app/src
+    depends_on:
+      - flasky-db
+    environment:
+      DATABASE_URL: "postgres://postgres:password@flasky-db:5432/flasky"
+      VIRTUAL_HOST: "app.flasky.local"
+      VIRTUAL_PORT: "80"
+    env_file:
+      - ./env/flasky-app.env
+      - ./env/local.env
+    networks:
+      ? flasky
+
+networks:
+  ? default
+  ? flasky
+
+volumes:
+  ? pg-admin
